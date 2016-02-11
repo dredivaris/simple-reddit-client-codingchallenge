@@ -1,0 +1,24 @@
+{
+  "name": "reddit_web_client",
+  "authors": [
+    "dredivaris <dredivaris@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "directory": "./app/static/bower_components",
+  "dependencies": {
+    "bootstrap": "~3.3.2",
+    "jquery": "~2.1.3",
+    "react": "~0.12.2"
+  }
+}
