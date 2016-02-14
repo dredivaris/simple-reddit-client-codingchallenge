@@ -9,6 +9,12 @@
   "author": "dredivaris@gmail.com",
   "license": "ISC",
   "devDependencies": {
-    "bower": "^1.7.7"
+    "bower": "^1.7.7",
+    "gulp": "^3.9.1",
+    "gulp-browserify": "^0.5.1",
+    "gulp-clean": "^0.3.1",
+    "gulp-size": "^1.2.1",
+    "react": "^0.12.2",
+    "reactify": "^1.0.0"
   }
 }
