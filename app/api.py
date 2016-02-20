@@ -3,8 +3,8 @@ from functools import wraps
 from flask import jsonify
 from flask.ext.restful import Api, Resource, reqparse, abort
 
-from app import app
-from app.models import User
+from app import app, db
+from app.models import User, FavoriteLink
 from app.reddit import get_submissions
 
 api = Api(app)
@@ -42,9 +42,29 @@ class FavoritingResource(Resource):
 
 class FavoritingAPI(FavoritingResource):
     def get(self, user):
-        return jsonify({'success': True, 'user': user.id})
+        favorites = [(f.url, f.thumbnail) for f in user.favorite_links.all()]
+        return {'success': True, 'user': user.id, 'favorites': favorites}
 
     def post(self, user):
-        return jsonify()
+        parser = reqparse.RequestParser()
+        parser.add_argument('url', type=str, required=True)
+        parser.add_argument('thumbnail', type=str, required=False)
+        parser.add_argument('reddit_post_id', type=str, required=True)
+        args = parser.parse_args()
+
+        fav_link = FavoriteLink(url=args['url'], reddit_post_id=args['reddit_post_id'], owner=user)
+        if 'thumbnail' in args:
+            fav_link.thumbnail = args['thumbnail']
+        db.session.commit()
+        return {'success': True,
+                'favorite_link': {
+                    'url': fav_link.url,
+                    'thumbnail': fav_link.thumbnail,
+                    'reddit_post_id': fav_link.reddit_post_id
+                }}
+
+    def delete(self, user):
+        pass
+
 
 api.add_resource(FavoritingAPI, '/favoriting/api/v1.0/<int:user>/')
