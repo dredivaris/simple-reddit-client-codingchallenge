@@ -1,0 +1,1 @@
+REDDIT_USERAGENT = 'mozilla:andreas_coding_challenge:v0.1'
