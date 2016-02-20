@@ -4,11 +4,9 @@ from app.constants import REDDIT_USERAGENT
 
 
 def get_submissions(subreddit, num_entries, after):
-    print('get sub', subreddit, num_entries, after)
     num_entries = num_entries if num_entries else 25
     reddit = praw.Reddit(user_agent=REDDIT_USERAGENT)
     params = {'after': after} if after else None
-    print('after is', after)
     all_gen = reddit.get_subreddit(subreddit).get_hot(limit=num_entries, params=params)
     return [{'link': s.permalink,
              'thumbnail': s.thumbnail,
