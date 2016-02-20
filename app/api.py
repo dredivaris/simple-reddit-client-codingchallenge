@@ -40,7 +40,7 @@ class FavoritingResource(Resource):
     method_decorators = [validate_id]
 
 
-class FavoritingAPI(FavoritingResource):
+class FavoritingListAPI(FavoritingResource):
     def get(self, user):
         favorites = [(f.url, f.thumbnail) for f in user.favorite_links.all()]
         return {'success': True, 'user': user.id, 'favorites': favorites}
@@ -63,8 +63,12 @@ class FavoritingAPI(FavoritingResource):
                     'reddit_post_id': fav_link.reddit_post_id
                 }}
 
-    def delete(self, user):
-        pass
 
+class FavoritingAPI(FavoritingResource):
+    def delete(self, user, reddit_post_id):
+        FavoriteLink.query.filter_by(owner=user, reddit_post_id=reddit_post_id).delete()
+        db.session.commit()
+        return {'success': True}
 
-api.add_resource(FavoritingAPI, '/favoriting/api/v1.0/<int:user>/')
+api.add_resource(FavoritingListAPI, '/favoriting/api/v1.0/<int:user>/')
+api.add_resource(FavoritingAPI, '/favoriting/api/v1.0/<int:user>/<string:reddit_post_id>/')
