@@ -39,7 +39,10 @@ var RedditEntries = React.createClass({
       current_post_id: this.state.pagination.last_post_id})});
     this.loadEntries.call(this);
   },
-
+  onFavorite: function() {
+    console.log('testing...........');
+    console.log('in onFavorite', this.prop, this.state);
+  },
   componentDidMount: function() {
     this.loadEntries();
   },
@@ -83,7 +86,10 @@ var RedditEntries = React.createClass({
       <div className="pager">
         <ul>
           { entries.map(function (entry) {
-            return <li><a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a></li>
+            return <li>
+                      <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
+                      <Button text=" Add to favorites " onClick={this.onFavorite} disabled=""/>
+                   </li>
           })}
         </ul>
         <Footer data={this.state} onFirst={this.getFirstPage} onPrev={this.getPrevPage}
