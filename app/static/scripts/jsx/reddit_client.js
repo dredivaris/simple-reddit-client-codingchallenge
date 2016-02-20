@@ -44,8 +44,9 @@ var RedditEntries = React.createClass({
     this.loadEntries();
   },
   loadEntries: function() {
+    var after_name = this.state.pagination.page === 0 ? null:this.state.pagination.current_post_id;
     var url = this.props.url + '?number_of_entries=' + this.state.pagination.entries_per_page +
-      '&after_name=' + this.state.pagination.current_post_id;
+      '&after_name=' + after_name;
     console.log('loading entries', this.state.pagination, 'url as: ', url);
     $.ajax({
       url: url,
@@ -85,7 +86,8 @@ var RedditEntries = React.createClass({
             return <li><a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a></li>
           })}
         </ul>
-        <Footer data={this.state} onFirst={this.getFirstPage} onPrev={this.getPrevPage} onNext={this.getNextPage} />
+        <Footer data={this.state} onFirst={this.getFirstPage} onPrev={this.getPrevPage}
+                onNext={this.getNextPage} />
       </div>
     );
 
@@ -97,13 +99,15 @@ var Footer = React.createClass({
     return (
       <div className="footer">
         <div className="pagination-control">
-          <Button text="<< First" onClick={this.props.onFirst} disabled={this.props.data.pagination.page === 1} />
-          <Button text="< Prev" onClick={this.props.onPrev} disabled={this.props.data.pagination.page === 1} />
+          <Button text="<< First" onClick={this.props.onFirst}
+                  disabled={this.props.data.pagination.page === 0} />
+          <Button text="< Prev" onClick={this.props.onPrev}
+                  disabled={this.props.data.pagination.page === 0} />
           <Button text="Next >" onClick={this.props.onNext} />
         </div>
 
         <div className="stats">
-          <span className="">Page {this.props.data.pagination.page} </span>
+          <span className="">Page {this.props.data.pagination.page + 1} </span>
         </div>
       </div>
     );
@@ -114,7 +118,8 @@ var Footer = React.createClass({
 var Button = React.createClass({
   render: function () {
     return (
-      <button type="button" onClick={this.props.onClick} disabled={this.props.disabled}>{this.props.text}</button>
+      <button type="button" onClick={this.props.onClick}
+              disabled={this.props.disabled}>{this.props.text}</button>
     );
   }
 });
