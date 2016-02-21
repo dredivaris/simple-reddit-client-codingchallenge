@@ -17,6 +17,7 @@ class FavoriteLink(db.Model):
     reddit_post_id = db.Column(db.String, unique=True)
     url = db.Column(db.String, unique=False)
     thumbnail = db.Column(db.String)
+    title = db.Column(db.String)
 
     def __repr__(self):
         return '<Favorite URL {}>'.format(self.url)
