@@ -5,6 +5,22 @@ const USER_ID = 1;
 const ENTRIES_PER_PAGE = 25;
 
 
+
+function loadFavorites(parent) {
+  $.ajax({
+    url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
+    dataType: 'json',
+    cache: false,
+    success: function(data) {
+      console.log('get favoriting data', data);
+      parent.setState({favorites: data.favorites});
+    }.bind(parent),
+    error: function(xhr, status, err) {
+      console.log(parent.props.url, status, err.toString());
+    }.bind(parent)
+  });
+}
+
 // handles actually outputing current list of entries from reddit
 var RedditEntries = React.createClass({
   // sets initial state
@@ -104,18 +120,7 @@ var RedditEntries = React.createClass({
     });
   },
   loadFavorites: function() {
-    $.ajax({
-      url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        console.log('get favoriting data', data);
-        this.setState({favorites: data.favorites});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.log(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+    loadFavorites(this);
   },
   render: function() {
     var entries = this.state.entries,
@@ -139,15 +144,15 @@ var RedditEntries = React.createClass({
         cache: false,
         success: function(data) {
           console.log('favorited success', data);
-          console.log('in on favorite, state is', state.entries[index]);
+          //console.log('in on favorite, state is', state.entries[index]);
           state.entries[index].favorite = true;
           // TODO: figure out binding of button disabling when favoriting a post
           that.setState({
-              entries: $.extend(that.state.entries, {
-                last_post_id: this.state.pagination.current_post_id,
-                current_post_id: null,
-                next_post_id: data.submissions[data.submissions.length-1].name
-              })});
+            entries: $.extend(that.state.entries, {
+              last_post_id: this.state.pagination.current_post_id,
+              current_post_id: null,
+              next_post_id: data.submissions[data.submissions.length-1].name
+            })});
 
         }.bind(this),
         error: function(xhr, status, err) {
@@ -161,11 +166,11 @@ var RedditEntries = React.createClass({
         <ul>
           { entries.map(function (entry, index) {
             return <li>
-                      <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
-                      <Button text=" Add to favorites"
-                              onClick={on_favorite.bind(this, entry, index)}
-                              disabled={entry.favorite === true}/>
-                   </li>
+              <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
+              <Button text=" Add to favorites"
+                      onClick={on_favorite.bind(this, entry, index)}
+                      disabled={entry.favorite === true}/>
+            </li>
           })}
         </ul>
         <Footer data={this.state} onFirst={this.getFirstPage} onPrev={this.getPrevPage}
@@ -224,17 +229,29 @@ var SimpleRedditClient = React.createClass({
       reddit_all = "reddit/api/v1.0/all/";
 
     return (
-    <div>
-      <Button text="Home" disabled={this.state.is_home} onClick={this.onClickHome}></Button>
-      <Button text="Favorites" disabled={!this.state.is_home} onClick={this.onClickFav}></Button>
-      { this.state.is_home ?
-        <RedditEntries url={reddit_all}/> : <RedditFavorites url={favorites_url} /> }
-    </div>
+      <div>
+        <Button text="Home" disabled={this.state.is_home} onClick={this.onClickHome}></Button>
+        <Button text="Favorites" disabled={!this.state.is_home} onClick={this.onClickFav}></Button>
+        { this.state.is_home ?
+          <RedditEntries url={reddit_all}/> : <RedditFavorites url={favorites_url} /> }
+      </div>
     )
   }
 });
 
 var RedditFavorites = React.createClass({
+  getInitialState: function() {
+    return {
+      favorites: {}
+    };
+  },
+  componentDidMount: function() {
+    this.loadFavorites();
+    console.log('loaded favorites: ', this.state.favorites);
+  },
+  loadFavorites: function() {
+    loadFavorites(this);
+  },
   render: function() {
     return null;
   }
