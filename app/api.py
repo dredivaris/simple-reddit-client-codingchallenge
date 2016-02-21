@@ -42,7 +42,9 @@ class FavoritingResource(Resource):
 
 class FavoritingListAPI(FavoritingResource):
     def get(self, user):
-        favorites = [(f.url, f.thumbnail) for f in user.favorite_links.all()]
+        favorites = [{'url': f.url,
+                      'thumbnail': f.thumbnail,
+                      'reddit_post_id': f.reddit_post_id} for f in user.favorite_links.all()]
         return {'success': True, 'user': user.id, 'favorites': favorites}
 
     def post(self, user):

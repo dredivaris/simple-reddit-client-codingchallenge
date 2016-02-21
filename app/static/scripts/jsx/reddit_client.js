@@ -1,6 +1,9 @@
 /** @jsx React.DOM */
 
+// the user is hardcoded for now
+const USER_ID = 1;
 const ENTRIES_PER_PAGE = 25;
+
 
 // handles actually outputing current list of entries from reddit
 var RedditEntries = React.createClass({
@@ -14,7 +17,8 @@ var RedditEntries = React.createClass({
         last_post_id: null,
         current_post_id: null,
         next_post_id: null
-      }
+      },
+      favorites: {}
     };
   },
   getFirstPage: function() {
@@ -39,10 +43,7 @@ var RedditEntries = React.createClass({
       current_post_id: this.state.pagination.last_post_id})});
     this.loadEntries.call(this);
   },
-  onFavorite: function() {
-    console.log('testing...........');
-    console.log('in onFavorite', this.prop, this.state);
-  },
+
   componentDidMount: function() {
     this.loadEntries();
   },
@@ -51,6 +52,8 @@ var RedditEntries = React.createClass({
     var url = this.props.url + '?number_of_entries=' + this.state.pagination.entries_per_page +
       '&after_name=' + after_name;
     console.log('loading entries', this.state.pagination, 'url as: ', url);
+    this.loadFavorites();
+    console.log('checking favs:', this.state.favorites);
     $.ajax({
       url: url,
       dataType: 'json',
@@ -58,15 +61,41 @@ var RedditEntries = React.createClass({
       success: function(data) {
         var page = this.state.pagination.page;
         console.log('got data', data);
-        this.setState({
-          entries: data.submissions,
-          pagination: $.extend(this.state.pagination, {
-            last_post_id: this.state.pagination.current_post_id,
-            current_post_id: null,
-            next_post_id: data.submissions[data.submissions.length-1].name
-          })});
-        console.log('set state done.');
-        console.log('state set as', this.state.pagination);
+        $.ajax({
+          url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
+          dataType: 'json',
+          cache: false,
+          success: function(favorites) {
+            console.log('get favoriting data', favorites);
+
+            var favorite_ids = favorites.favorites.map(function(obj){
+              return obj.reddit_post_id
+            });
+            console.log('favorite_ids', favorite_ids);
+            for (var i = 0; i < data.submissions.length; i++) {
+              if (favorite_ids.indexOf(data.submissions[i].name) > -1) {
+                console.log(data.submissions[i].name , 'is in favorite ids');
+                data.submissions[i].favorite = true;
+              }
+              else {
+                data.submissions[i].favorite = false;
+              }
+            }
+            this.setState({
+              entries: data.submissions,
+              pagination: $.extend(this.state.pagination, {
+                last_post_id: this.state.pagination.current_post_id,
+                current_post_id: null,
+                next_post_id: data.submissions[data.submissions.length-1].name
+              })});
+            console.log('set state done.');
+            console.log('state set as', this.state);
+
+          }.bind(this),
+          error: function(xhr, status, err) {
+            console.log(this.props.url, status, err.toString());
+          }.bind(this)
+        });
 
       }.bind(this),
       error: function(xhr, status, err) {
@@ -74,21 +103,68 @@ var RedditEntries = React.createClass({
       }.bind(this)
     });
   },
+  loadFavorites: function() {
+    $.ajax({
+      url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        console.log('get favoriting data', data);
+        this.setState({favorites: data.favorites});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.log(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
   render: function() {
-    var entries = this.state.entries;
+    var entries = this.state.entries,
+      that = this;
     console.log('this.state data:', this.state.entries, this.state.entries.length);
     if (!this.state.entries.length) {
       console.log('returning null');
       return null;
     }
+    var on_favorite = function(entry, index, mouse_event) {
+      console.log('on favvorite', entry, mouse_event, index);
+      $.ajax({
+        method: 'POST',
+        url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
+        data: {
+          url: entry.link,
+          thumbnail: entry.thumbnail,
+          reddit_post_id: entry.name
+        },
+        dataType: 'json',
+        cache: false,
+        success: function(data) {
+          console.log('favorited success', data);
+          console.log('in on favorite, state is', state.entries[index]);
+          state.entries[index].favorite = true;
+          // TODO: figure out binding of button disabling when favoriting a post
+          that.setState({
+              entries: $.extend(that.state.entries, {
+                last_post_id: this.state.pagination.current_post_id,
+                current_post_id: null,
+                next_post_id: data.submissions[data.submissions.length-1].name
+              })});
 
+        }.bind(this),
+        error: function(xhr, status, err) {
+          console.log(this.props.url, status, err.toString());
+        }.bind(this)
+      });
+
+    };
     return (
       <div className="pager">
         <ul>
-          { entries.map(function (entry) {
+          { entries.map(function (entry, index) {
             return <li>
                       <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
-                      <Button text=" Add to favorites " onClick={this.onFavorite} disabled=""/>
+                      <Button text=" Add to favorites"
+                              onClick={on_favorite.bind(this, entry, index)}
+                              disabled={entry.favorite === true}/>
                    </li>
           })}
         </ul>
