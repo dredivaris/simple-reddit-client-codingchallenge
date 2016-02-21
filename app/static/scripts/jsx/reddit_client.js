@@ -198,7 +198,7 @@ var Footer = React.createClass({
 
 // from http://zinoui.com/blog/react-grid-component
 var Button = React.createClass({
-  render: function () {
+  render: function() {
     return (
       <button type="button" onClick={this.props.onClick}
               disabled={this.props.disabled}>{this.props.text}</button>
@@ -206,7 +206,41 @@ var Button = React.createClass({
   }
 });
 
+
+var SimpleRedditClient = React.createClass({
+  getInitialState: function() {
+    return {
+      is_home: true
+    };
+  },
+  onClickHome: function() {
+    this.setState({ is_home: true });
+  },
+  onClickFav: function() {
+    this.setState({ is_home: false });
+  },
+  render: function() {
+    var favorites_url = "/favoriting/api/v1.0/" + USER_ID + "/",
+      reddit_all = "reddit/api/v1.0/all/";
+
+    return (
+    <div>
+      <Button text="Home" disabled={this.state.is_home} onClick={this.onClickHome}></Button>
+      <Button text="Favorites" disabled={!this.state.is_home} onClick={this.onClickFav}></Button>
+      { this.state.is_home ?
+        <RedditEntries url={reddit_all}/> : <RedditFavorites url={favorites_url} /> }
+    </div>
+    )
+  }
+});
+
+var RedditFavorites = React.createClass({
+  render: function() {
+    return null;
+  }
+});
+
 React.render(
-  <RedditEntries url="reddit/api/v1.0/all/"/>,
+  <SimpleRedditClient/>,
   document.getElementById('entries-list')
 );
