@@ -6,18 +6,24 @@ const ENTRIES_PER_PAGE = 25;
 
 
 
-function loadFavorites(parent) {
+function loadFavorites() {
+  console.log('in loading favorites', this);
   $.ajax({
     url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
     dataType: 'json',
     cache: false,
     success: function(data) {
       console.log('get favoriting data', data);
-      parent.setState({favorites: data.favorites});
-    }.bind(parent),
+
+      this.setState({favorites: data.favorites.map(function (favorite) {
+        favorite.favorite = true;
+        console.log('favorite set to', favorite);
+        return favorite;
+      })});
+    }.bind(this),
     error: function(xhr, status, err) {
-      console.log(parent.props.url, status, err.toString());
-    }.bind(parent)
+      console.log(this.props.url, status, err.toString());
+    }.bind(this)
   });
 }
 
@@ -120,7 +126,8 @@ var RedditEntries = React.createClass({
     });
   },
   loadFavorites: function() {
-    loadFavorites(this);
+    console.log('about to load...');
+    loadFavorites.bind(this)();
   },
   render: function() {
     var entries = this.state.entries,
@@ -162,7 +169,7 @@ var RedditEntries = React.createClass({
 
     };
     return (
-      <div className="pager">
+      <div>
         <ul>
           { entries.map(function (entry, index) {
             return <li>
@@ -211,6 +218,84 @@ var Button = React.createClass({
   }
 });
 
+var RedditFavorites = React.createClass({
+  getInitialState: function() {
+    return {
+      favorites: []
+    };
+  },
+  handleClick: function(index) {
+    //console.log('in handleClick, what is', this, index);
+    var favorite_id_to_delete, that = this;
+    var items = this.state.favorites.map(function(favorite, i) {
+      if (index === i) {
+        favorite.favorite = false;
+        favorite_id_to_delete = favorite.reddit_post_id;
+      }
+      return favorite;
+    });
+    $.ajax({
+      url: 'favoriting/api/v1.0/' + USER_ID + '/' + favorite_id_to_delete + '/',
+      type: 'DELETE',
+      success: function (data) {
+        console.log('delete success', data);
+        that.setState({favorites: items});
+      },
+    });
+
+  },
+  componentDidMount: function() {
+    this.loadFavorites();
+    console.log('loaded favorites: ', this.state.favorites);
+  },
+  loadFavorites: function() {
+    console.log('about to loads');
+    loadFavorites.bind(this)();
+    //this.setState(function(previous_state, current_props) {
+    //  console.log('setting favorite to true...', previous_state);
+    //  if (previous_state.favorites.length) {
+    //    return {
+    //      favorites: previous_state.favorites.map(function (favorite) {
+    //        favorite.favorite = true;
+    //
+    //        console.log('favorite set to', favorite);
+    //        return favorite;
+    //      })
+    //    };
+    //  }
+    //  else {
+    //    return {favorites: previous_state.favorites}
+    //  }
+    //});
+  },
+  render: function() {
+    console.log('in render favorites:', this.state.favorites);
+    return (
+      <div>
+        <ul>
+          {
+            this.state.favorites.map(function (entry, index) {
+              var bound_click = this.handleClick.bind(this, index);
+              //console.log('looping through favorites', entry);
+              if (entry.favorite) {
+                return (
+                  <li>
+                    <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
+                    <Button text="Remove favorite"
+                            onClick={bound_click}
+                            disabled={entry.favorite !== true}/>
+                  </li>
+                )
+              }
+              else {
+                return null;
+              }
+          }, this)}
+        </ul>
+      </div>
+    )
+  }
+});
 
 var SimpleRedditClient = React.createClass({
   getInitialState: function() {
@@ -236,24 +321,6 @@ var SimpleRedditClient = React.createClass({
           <RedditEntries url={reddit_all}/> : <RedditFavorites url={favorites_url} /> }
       </div>
     )
-  }
-});
-
-var RedditFavorites = React.createClass({
-  getInitialState: function() {
-    return {
-      favorites: {}
-    };
-  },
-  componentDidMount: function() {
-    this.loadFavorites();
-    console.log('loaded favorites: ', this.state.favorites);
-  },
-  loadFavorites: function() {
-    loadFavorites(this);
-  },
-  render: function() {
-    return null;
   }
 });
 
