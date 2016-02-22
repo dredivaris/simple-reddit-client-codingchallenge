@@ -129,56 +129,52 @@ var RedditEntries = React.createClass({
     console.log('about to load...');
     loadFavorites.bind(this)();
   },
+  handleClick: function(entry, index) {
+    console.log('in handleclick', entry, index);
+    var that = this;
+    $.ajax({
+      method: 'POST',
+      url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
+      data: {
+        url: entry.link,
+        thumbnail: entry.thumbnail,
+        reddit_post_id: entry.name
+      },
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        var new_entries = this.state.entries.map(function(entry) {
+          //console.log('entry check', entry.name, data.favorite_link.reddit_post_id);
+          if (entry.name === data.favorite_link.reddit_post_id) {
+            entry.favorite = true;
+          }
+          return entry;
+        });
+        this.setState({entries: new_entries});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.log(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
   render: function() {
     var entries = this.state.entries,
       that = this;
-    console.log('this.state data:', this.state.entries, this.state.entries.length);
     if (!this.state.entries.length) {
-      console.log('returning null');
       return null;
     }
-    var on_favorite = function(entry, index, mouse_event) {
-      console.log('on favvorite', entry, mouse_event, index);
-      $.ajax({
-        method: 'POST',
-        url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
-        data: {
-          url: entry.link,
-          thumbnail: entry.thumbnail,
-          reddit_post_id: entry.name
-        },
-        dataType: 'json',
-        cache: false,
-        success: function(data) {
-          console.log('favorited success', data);
-          //console.log('in on favorite, state is', state.entries[index]);
-          state.entries[index].favorite = true;
-          // TODO: figure out binding of button disabling when favoriting a post
-          that.setState({
-            entries: $.extend(that.state.entries, {
-              last_post_id: this.state.pagination.current_post_id,
-              current_post_id: null,
-              next_post_id: data.submissions[data.submissions.length-1].name
-            })});
-
-        }.bind(this),
-        error: function(xhr, status, err) {
-          console.log(this.props.url, status, err.toString());
-        }.bind(this)
-      });
-
-    };
     return (
       <div>
         <ul>
           { entries.map(function (entry, index) {
+            var bound_click = this.handleClick.bind(this, entry, index);
             return <li>
               <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
               <Button text=" Add to favorites"
-                      onClick={on_favorite.bind(this, entry, index)}
+                      onClick={bound_click}
                       disabled={entry.favorite === true}/>
             </li>
-          })}
+          }, this)}
         </ul>
         <Footer data={this.state} onFirst={this.getFirstPage} onPrev={this.getPrevPage}
                 onNext={this.getNextPage} />
@@ -251,22 +247,6 @@ var RedditFavorites = React.createClass({
   loadFavorites: function() {
     console.log('about to loads');
     loadFavorites.bind(this)();
-    //this.setState(function(previous_state, current_props) {
-    //  console.log('setting favorite to true...', previous_state);
-    //  if (previous_state.favorites.length) {
-    //    return {
-    //      favorites: previous_state.favorites.map(function (favorite) {
-    //        favorite.favorite = true;
-    //
-    //        console.log('favorite set to', favorite);
-    //        return favorite;
-    //      })
-    //    };
-    //  }
-    //  else {
-    //    return {favorites: previous_state.favorites}
-    //  }
-    //});
   },
   render: function() {
     console.log('in render favorites:', this.state.favorites);
@@ -290,7 +270,7 @@ var RedditFavorites = React.createClass({
               else {
                 return null;
               }
-          }, this)}
+            }, this)}
         </ul>
       </div>
     )
