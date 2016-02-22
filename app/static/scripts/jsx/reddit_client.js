@@ -3,7 +3,7 @@
 // the user is hardcoded for now
 const USER_ID = 1;
 const ENTRIES_PER_PAGE = 25;
-
+var React = require('react');
 
 
 function loadFavorites() {
@@ -126,7 +126,6 @@ var RedditEntries = React.createClass({
     });
   },
   loadFavorites: function() {
-    console.log('about to load...');
     loadFavorites.bind(this)();
   },
   handleClick: function(entry, index) {
@@ -165,17 +164,15 @@ var RedditEntries = React.createClass({
     }
     return (
       <div>
-        <ul>
-          { entries.map(function (entry, index) {
-            var bound_click = this.handleClick.bind(this, entry, index);
-            return <li>
-              <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
-              <Button text=" Add to favorites"
-                      onClick={bound_click}
-                      disabled={entry.favorite === true}/>
-            </li>
-          }, this)}
-        </ul>
+        { entries.map(function (entry, index) {
+          var bound_click = this.handleClick.bind(this, entry, index);
+          return <div>
+            <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
+            <Button text=" Add to favorites"
+                    onClick={bound_click}
+                    disabled={entry.favorite === true}/>
+          </div>
+        }, this)}
         <Footer data={this.state} onFirst={this.getFirstPage} onPrev={this.getPrevPage}
                 onNext={this.getNextPage} />
       </div>
@@ -204,12 +201,10 @@ var Footer = React.createClass({
   }
 });
 
-// from http://zinoui.com/blog/react-grid-component
 var Button = React.createClass({
   render: function() {
     return (
-      <button type="button" onClick={this.props.onClick}
-              disabled={this.props.disabled}>{this.props.text}</button>
+      <button onClick={this.props.onClick} disabled={this.props.disabled}>{this.props.text}</button>
     );
   }
 });
@@ -252,26 +247,23 @@ var RedditFavorites = React.createClass({
     console.log('in render favorites:', this.state.favorites);
     return (
       <div>
-        <ul>
-          {
-            this.state.favorites.map(function (entry, index) {
-              var bound_click = this.handleClick.bind(this, index);
-              //console.log('looping through favorites', entry);
-              if (entry.favorite) {
-                return (
-                  <li>
-                    <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
-                    <Button text="Remove favorite"
-                            onClick={bound_click}
-                            disabled={entry.favorite !== true}/>
-                  </li>
-                )
-              }
-              else {
-                return null;
-              }
-            }, this)}
-        </ul>
+        {
+          this.state.favorites.map(function (entry, index) {
+            var bound_click = this.handleClick.bind(this, index);
+            if (entry.favorite) {
+              return (
+                <div>
+                  <a href={entry.link}><img src={entry.thumbnail} alt={entry.title}/></a>
+                  <Button text="Remove favorite"
+                          onClick={bound_click}
+                          disabled={entry.favorite !== true}/>
+                </div>
+              )
+            }
+            else {
+              return null;
+            }
+          }, this)}
       </div>
     )
   }
@@ -292,7 +284,6 @@ var SimpleRedditClient = React.createClass({
   render: function() {
     var favorites_url = "/favoriting/api/v1.0/" + USER_ID + "/",
       reddit_all = "reddit/api/v1.0/all/";
-
     return (
       <div>
         <Button text="Home" disabled={this.state.is_home} onClick={this.onClickHome}></Button>
@@ -304,7 +295,7 @@ var SimpleRedditClient = React.createClass({
   }
 });
 
-React.render(
+ReactDOM.render(
   <SimpleRedditClient/>,
   document.getElementById('entries-list')
 );
