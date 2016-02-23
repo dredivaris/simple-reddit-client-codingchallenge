@@ -8,9 +8,6 @@
   },
   "author": "dredivaris@gmail.com",
   "license": "ISC",
-  "engines": {
-    "node": "4.x"
-  },
   "devDependencies": {
     "bower": "latest",
     "gulp": "^3.9.1",
@@ -21,8 +18,5 @@
     "react-bootstrap": "^0.28.3",
     "reactify": "^1.0.0",
     "react-dom": "^0.14.7"
-  },
-  "dependencies": {
-    "gulp": "^3.9.1"
   }
 }
