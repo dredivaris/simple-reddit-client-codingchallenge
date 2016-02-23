@@ -137,7 +137,8 @@ var RedditEntries = React.createClass({
       data: {
         url: entry.link,
         thumbnail: entry.thumbnail,
-        reddit_post_id: entry.name
+        reddit_post_id: entry.name,
+        title: entry.title
       },
       dataType: 'json',
       cache: false,

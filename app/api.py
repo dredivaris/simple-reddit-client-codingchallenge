@@ -53,11 +53,14 @@ class FavoritingListAPI(FavoritingResource):
         parser.add_argument('url', type=str, required=True)
         parser.add_argument('thumbnail', type=str, required=False)
         parser.add_argument('reddit_post_id', type=str, required=True)
+        parser.add_argument('title', type=str, required=False)
         args = parser.parse_args()
 
         fav_link = FavoriteLink(url=args['url'], reddit_post_id=args['reddit_post_id'], owner=user)
         if 'thumbnail' in args:
             fav_link.thumbnail = args['thumbnail']
+        if 'title' in args:
+            fav_link.title = args['title']
         db.session.commit()
         return {'success': True,
                 'favorite_link': {
