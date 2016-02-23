@@ -7,9 +7,3 @@ from flask import render_template
 def index():
     return render_template('index.html',
                            title='Home')
-
-
-# route to react tutorial page
-@app.route('/hello_template')
-def hello():
-    return render_template('hello.html')

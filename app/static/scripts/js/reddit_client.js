@@ -3,7 +3,7 @@
 
 // the user is hardcoded for now
 const USER_ID = 1;
-const ENTRIES_PER_PAGE = 10;
+const ENTRIES_PER_PAGE = 8;
 var React = require('react');
 
 
