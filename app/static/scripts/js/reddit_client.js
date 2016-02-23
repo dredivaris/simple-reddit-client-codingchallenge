@@ -130,7 +130,7 @@ var RedditEntries = React.createClass({displayName: "RedditEntries",
     loadFavorites.bind(this)();
   },
   handleClick: function(entry, index) {
-    console.log('in handleclick', entry, index);
+    console.log('in Handleclick', entry, index);
     var that = this;
     $.ajax({
       method: 'POST',
@@ -138,7 +138,8 @@ var RedditEntries = React.createClass({displayName: "RedditEntries",
       data: {
         url: entry.link,
         thumbnail: entry.thumbnail,
-        reddit_post_id: entry.name
+        reddit_post_id: entry.name,
+        title: entry.title
       },
       dataType: 'json',
       cache: false,

@@ -129,7 +129,7 @@ var RedditEntries = React.createClass({
     loadFavorites.bind(this)();
   },
   handleClick: function(entry, index) {
-    console.log('in handleclick', entry, index);
+    console.log('in Handleclick', entry, index);
     var that = this;
     $.ajax({
       method: 'POST',
