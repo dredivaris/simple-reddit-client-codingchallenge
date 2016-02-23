@@ -7,17 +7,13 @@ var React = require('react');
 
 
 function loadFavorites() {
-  console.log('in loading favorites', this);
   $.ajax({
     url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
     dataType: 'json',
     cache: false,
     success: function(data) {
-      console.log('get favoriting data', data);
-
       this.setState({favorites: data.favorites.map(function (favorite) {
         favorite.favorite = true;
-        console.log('favorite set to', favorite);
         return favorite;
       })});
     }.bind(this),
@@ -73,9 +69,7 @@ var RedditEntries = React.createClass({
     var after_name = this.state.pagination.page === 0 ? null:this.state.pagination.current_post_id;
     var url = this.props.url + '?number_of_entries=' + this.state.pagination.entries_per_page +
       '&after_name=' + after_name;
-    console.log('loading entries', this.state.pagination, 'url as: ', url);
     this.loadFavorites();
-    console.log('checking favs:', this.state.favorites);
     $.ajax({
       url: url,
       dataType: 'json',
@@ -88,15 +82,12 @@ var RedditEntries = React.createClass({
           dataType: 'json',
           cache: false,
           success: function(favorites) {
-            console.log('get favoriting data', favorites);
 
             var favorite_ids = favorites.favorites.map(function(obj){
               return obj.reddit_post_id
             });
-            console.log('favorite_ids', favorite_ids);
             for (var i = 0; i < data.submissions.length; i++) {
               if (favorite_ids.indexOf(data.submissions[i].name) > -1) {
-                console.log(data.submissions[i].name , 'is in favorite ids');
                 data.submissions[i].favorite = true;
               }
               else {
@@ -110,8 +101,6 @@ var RedditEntries = React.createClass({
                 current_post_id: null,
                 next_post_id: data.submissions[data.submissions.length-1].name
               })});
-            console.log('set state done.');
-            console.log('state set as', this.state);
 
           }.bind(this),
           error: function(xhr, status, err) {
@@ -129,7 +118,6 @@ var RedditEntries = React.createClass({
     loadFavorites.bind(this)();
   },
   handleClick: function(entry, index) {
-    console.log('in Handleclick', entry, index);
     var that = this;
     $.ajax({
       method: 'POST',
@@ -144,7 +132,6 @@ var RedditEntries = React.createClass({
       cache: false,
       success: function(data) {
         var new_entries = this.state.entries.map(function(entry) {
-          //console.log('entry check', entry.name, data.favorite_link.reddit_post_id);
           if (entry.name === data.favorite_link.reddit_post_id) {
             entry.favorite = true;
           }
@@ -217,8 +204,7 @@ var RedditFavorites = React.createClass({
     };
   },
   handleClick: function(index) {
-    //console.log('in handleClick, what is', this, index);
-    var favorite_id_to_delete, that = this;
+    var favorite_id_to_delete = null, that = this;
     var items = this.state.favorites.map(function(favorite, i) {
       if (index === i) {
         favorite.favorite = false;
@@ -230,7 +216,6 @@ var RedditFavorites = React.createClass({
       url: 'favoriting/api/v1.0/' + USER_ID + '/' + favorite_id_to_delete + '/',
       type: 'DELETE',
       success: function (data) {
-        console.log('delete success', data);
         that.setState({favorites: items});
       },
     });
@@ -238,14 +223,11 @@ var RedditFavorites = React.createClass({
   },
   componentDidMount: function() {
     this.loadFavorites();
-    console.log('loaded favorites: ', this.state.favorites);
   },
   loadFavorites: function() {
-    console.log('about to loads');
     loadFavorites.bind(this)();
   },
   render: function() {
-    console.log('in render favorites:', this.state.favorites);
     return (
       <div>
         {
