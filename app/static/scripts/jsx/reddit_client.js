@@ -76,7 +76,6 @@ var RedditEntries = React.createClass({
       cache: false,
       success: function(data) {
         var page = this.state.pagination.page;
-        console.log('got data', data);
         $.ajax({
           url: '/favoriting/api/v1.0/' + USER_ID + '/' ,
           dataType: 'json',
